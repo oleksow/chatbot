@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat GPT</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; background: #f9f9f9; }
+    #input { width: 100%; padding: 10px; margin-top: 10px; }
+    .user { color: blue; margin: 5px 0; }
+    .bot { color: green; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h2>Chat GPT na GitHub Pages</h2>
+  <div id="chat"></div>
+  <input id="input" placeholder="Napisz coś..." autocomplete="off" />
+  
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter') {
+        const userText = input.value.trim();
+        if (!userText) return;
+        appendMessage('user', userText);
+        input.value = '';
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer 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'
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [{ role: "user", content: userText }]
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Błąd API: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const botText = data.choices[0].message.content;
+          appendMessage('bot', botText);
+        } catch (err) {
+          appendMessage('bot', 'Ups, coś poszło nie tak: ' + err.message);
+        }
+      }
+    });
+
+    function appendMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = role;
+      div.textContent = (role === 'user' ? 'Ty: ' : 'GPT: ') + text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
